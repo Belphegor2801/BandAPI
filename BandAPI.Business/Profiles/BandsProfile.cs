@@ -2,6 +2,7 @@
 using BandAPI.Data.Entities;
 using AutoMapper;
 using BandAPI.Helpers;
+using BandAPI.Models;
 
 namespace BandAPI.Profiles
 {
@@ -9,10 +10,11 @@ namespace BandAPI.Profiles
     {
         public BandsProfile()
         {
-            CreateMap<Band, Models.BandDto>()
+            CreateMap<Band, BandDto>()
                 .ForMember(
                     dest => dest.FoundedYearsAgo,
                     opt => opt.MapFrom(src => $"{src.Founded.ToString("yyyy")} ({src.Founded.GetYearsAgo()}) years ago"));
+            CreateMap<BandForCreatingDto, Band>();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using BandAPI.Data.Entities;
+using BandAPI.Models;
 using AutoMapper;
 using BandAPI.Helpers;
 
@@ -9,7 +10,9 @@ namespace BandAPI.Business.Profiles
     {
         public AlbumsProfile()
         {
-            CreateMap<Album, Models.AlbumDto>().ReverseMap();
+            CreateMap<Album, AlbumDto>().ReverseMap();
+            CreateMap<AlbumForCreatingDto, Album>();
+            CreateMap<AlbumForUpdatingDto, Album>();
         }
     }
 }

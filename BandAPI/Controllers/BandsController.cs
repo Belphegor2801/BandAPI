@@ -47,5 +47,36 @@ namespace BandAPI.Controllers
 
             return new JsonResult(bandFromRepo);
         }
+
+        [HttpPost(Name = "AddBand")]
+        public ActionResult CreateBand([FromBody] BandForCreatingDto band)
+        {
+            var bandEntity = _mapper.Map<Band>(band);
+            _bandAlbumRepository.AddBand(bandEntity);
+            _bandAlbumRepository.Save();
+
+            var bandToReturn = _mapper.Map<BandDto>(bandEntity);
+
+            return CreatedAtRoute("GetBand", new { bandId = bandToReturn.Id }, bandToReturn);
+        }
+
+        [HttpOptions]
+        public IActionResult GetBandsOptions()
+        {
+            Response.Headers.Add("Allow", "GET, POST, DELETE, HEAD, OPTIONS");
+            return Ok();
+        }
+
+        [HttpDelete("{bandId}")]
+        public ActionResult DeleteBand(Guid bandId)
+        {
+            var bandFromRepo = _bandAlbumRepository.GetBand(bandId);
+            if (bandFromRepo == null) return NotFound();
+
+            _bandAlbumRepository.DeleteBand(bandFromRepo);
+            _bandAlbumRepository.Save();
+
+            return NoContent();
+        }
     }
 }
