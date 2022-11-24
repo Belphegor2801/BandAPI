@@ -12,7 +12,7 @@ namespace BandAPI.Business.Profiles
         {
             CreateMap<Album, AlbumDto>().ReverseMap();
             CreateMap<AlbumForCreatingDto, Album>();
-            CreateMap<AlbumForUpdatingDto, Album>();
+            CreateMap<AlbumForUpdatingDto, Album>().ReverseMap();
         }
     }
 }

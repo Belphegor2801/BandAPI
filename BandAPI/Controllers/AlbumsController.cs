@@ -71,7 +71,17 @@ namespace BandAPI.Controllers
             if (!_bandAlbumRepository.BandExists(bandId)) return NotFound();
 
             var albumFromRepo = _bandAlbumRepository.GetAlbum(bandId, albumId);
-            if (albumFromRepo == null) return NotFound();
+            if (albumFromRepo == null) // Add album if not exist
+            {
+                var albumToAdd = _mapper.Map<Album>(album);
+                albumToAdd.Id = albumId;
+                _bandAlbumRepository.AddAlbum(bandId, albumToAdd);
+                _bandAlbumRepository.Save();
+
+                var albumToReturn = _mapper.Map<AlbumDto>(albumToAdd);
+
+                return CreatedAtRoute("GetAlbumForBand", new { bandId = bandId, albumId = albumToReturn.Id }, albumToReturn);
+            }
 
             _mapper.Map(album, albumFromRepo);
             _bandAlbumRepository.UpdateAlbum(albumFromRepo);
@@ -80,18 +90,34 @@ namespace BandAPI.Controllers
             return NoContent();
         }
 
-        [HttpPatch]
-        public ActionResult PartiallyUpdateAlbumForBand(Guid bandId, Guid albumId, JsonPatchDocument<AlbumForUpdatingDto> patchDocument)
+        [HttpPatch("{albumId}")]
+        public ActionResult PartiallyUpdateAlbumForBand(Guid bandId, Guid albumId,
+           [FromBody] JsonPatchDocument<AlbumForUpdatingDto> patchDocument)
         {
-            if (!_bandAlbumRepository.BandExists(bandId)) return NotFound();
+            if (!_bandAlbumRepository.BandExists(bandId))
+                return NotFound();
 
             var albumFromRepo = _bandAlbumRepository.GetAlbum(bandId, albumId);
-            if (albumFromRepo == null) return NotFound();
+            if (albumFromRepo == null)
+            {
+                var albumDto = new AlbumForUpdatingDto();
+                patchDocument.ApplyTo(albumDto);
+                var albumToAdd = _mapper.Map<Album>(albumDto);
+                albumToAdd.Id = albumId;
+
+                _bandAlbumRepository.AddAlbum(bandId, albumToAdd);
+                _bandAlbumRepository.Save();
+
+                var albumToReturn = _mapper.Map<AlbumDto>(albumToAdd);
+
+                return CreatedAtRoute("GetAlbumForBand", new { bandId = bandId, albumId = albumToReturn.Id }, albumToReturn);
+            }
 
             var albumToPatch = _mapper.Map<AlbumForUpdatingDto>(albumFromRepo);
-            patchDocument.ApplyTo(albumToPatch);
+            patchDocument.ApplyTo(albumToPatch, ModelState);
 
-            if (!TryValidateModel(albumToPatch)) return ValidationProblem(ModelState);
+            if (!TryValidateModel(albumToPatch))
+                return ValidationProblem(ModelState);
 
             _mapper.Map(albumToPatch, albumFromRepo);
             _bandAlbumRepository.UpdateAlbum(albumFromRepo);

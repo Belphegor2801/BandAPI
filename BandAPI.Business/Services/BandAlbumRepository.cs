@@ -109,7 +109,7 @@ namespace BandAPI.Services
             return _dbcontext.Bands.Where(b => bandIds.Contains(b.Id)).OrderBy(b => b.Name).ToList();
         }
 
-        IEnumerable<Band> IBandAlbumRepository.GetBands(BandsResourceParameters bandsResourceParameters)
+        PagedList<Band> IBandAlbumRepository.GetBands(BandsResourceParameters bandsResourceParameters)
         {
             if (bandsResourceParameters == null)
                 throw new ArgumentNullException(nameof(bandsResourceParameters));
@@ -128,7 +128,7 @@ namespace BandAPI.Services
                 collection = collection.Where(b => b.Name.Contains(searchQuery));
             }
 
-            return collection;
+            return PagedList<Band>.Create(collection, bandsResourceParameters.PageNumber, bandsResourceParameters.PageSize);
         }
 
         bool IBandAlbumRepository.Save()
@@ -138,12 +138,12 @@ namespace BandAPI.Services
 
         void IBandAlbumRepository.UpdateAlbum(Album album)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         void IBandAlbumRepository.UpdateBand(Band band)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
     }
 }
