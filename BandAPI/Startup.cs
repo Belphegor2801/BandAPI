@@ -33,7 +33,6 @@ namespace BandAPI
         {
 
             services.AddControllers()
-                .AddXmlDataContractSerializerFormatters()
                 .AddNewtonsoftJson(setupAction =>
             {
                 setupAction.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
@@ -47,6 +46,7 @@ namespace BandAPI
             });
 
             services.AddScoped<IBandAlbumRepository, BandAlbumRepository>();
+            services.AddScoped<IPropertyMappingService, PropertyMappingService>();
             services.AddDbContext<BandAlbumDBContext>(options =>
             {
                 options.UseSqlServer(Configuration.GetConnectionString("BandAlbumDBContext"));
