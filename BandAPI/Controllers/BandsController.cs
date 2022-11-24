@@ -22,21 +22,25 @@ namespace BandAPI.Controllers
         private readonly IBandAlbumRepository _bandAlbumRepository;
         private readonly IMapper _mapper;
         private readonly IPropertyMappingService _propertyMappingService;
+        private readonly IPropertyValidationService _propertyValidationService;
 
         public BandsController(IBandAlbumRepository BandAlbumRepository, IMapper mapper,
-                                IPropertyMappingService propertyMappingService)
+                                IPropertyMappingService propertyMappingService,
+                                IPropertyValidationService propertyValidationService)
         {
             _bandAlbumRepository = BandAlbumRepository ?? throw new ArgumentNullException(nameof(BandAlbumRepository));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
+            _propertyValidationService = propertyValidationService ?? throw new ArgumentNullException(nameof(propertyValidationService));
         }
 
         // GET: api/Bands
         [HttpGet(Name = "GetBands")]
         [HttpHead]
-        public ActionResult<IEnumerable<BandDto>> GetBands([FromQuery] BandsResourceParameters bandsResourceParameters)
+        public IActionResult GetBands([FromQuery] BandsResourceParameters bandsResourceParameters)
         {
             if (!_propertyMappingService.ValidMappingExists<BandDto, Band>(bandsResourceParameters.OrderBy)) return BadRequest();
+            if (!_propertyValidationService.HasValideProperties<BandDto>(bandsResourceParameters.Fields)) return BadRequest();
 
             var bandsFromRepo = _bandAlbumRepository.GetBands(bandsResourceParameters);
 
@@ -62,18 +66,20 @@ namespace BandAPI.Controllers
 
             Response.Headers.Add("Pagination", JsonSerializer.Serialize(metaData, jso));
 
-            return Ok(_mapper.Map<IEnumerable<BandDto>>(bandsFromRepo));
+            return Ok(_mapper.Map<IEnumerable<BandDto>>(bandsFromRepo).ShapeData(bandsResourceParameters.Fields));
         }
 
         [HttpGet("{bandId}", Name = "GetBand")]
-        public ActionResult GetBand(Guid bandId)
+        public ActionResult GetBand(Guid bandId, string fields)
         {
+            if (!_propertyValidationService.HasValideProperties<BandDto>(fields)) return BadRequest();
+
             var bandFromRepo = _bandAlbumRepository.GetBand(bandId);
 
             if (bandFromRepo == null)
                 return NotFound();
 
-            return new JsonResult(bandFromRepo);
+            return Ok(_mapper.Map<BandDto>(bandFromRepo).ShapeData(fields));
         }
 
         [HttpPost(Name = "AddBand")]
@@ -114,6 +120,7 @@ namespace BandAPI.Controllers
                 case UriType.PreviousPage:
                     return Url.Link("GetBands", new
                     {
+                        fields = bandsResourceParameters.Fields,
                         orderBy = bandsResourceParameters.OrderBy,
                         pageNumber = bandsResourceParameters.PageNumber - 1,
                         pageSize = bandsResourceParameters.PageSize,
@@ -123,6 +130,7 @@ namespace BandAPI.Controllers
                 case UriType.NextPage:
                     return Url.Link("GetBands", new
                     {
+                        fields = bandsResourceParameters.Fields,
                         orderBy = bandsResourceParameters.OrderBy,
                         pageNumber = bandsResourceParameters.PageNumber + 1,
                         pageSize = bandsResourceParameters.PageSize,
@@ -132,6 +140,7 @@ namespace BandAPI.Controllers
                 default:
                     return Url.Link("GetBands", new
                     {
+                        fields = bandsResourceParameters.Fields,
                         orderBy = bandsResourceParameters.OrderBy,
                         pageNumber = bandsResourceParameters.PageNumber,
                         pageSize = bandsResourceParameters.PageSize,
