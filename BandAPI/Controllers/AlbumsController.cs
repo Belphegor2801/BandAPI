@@ -15,8 +15,9 @@ using AutoMapper;
 
 namespace BandAPI.Controllers
 {
-    [Route("api/albums")]
     [ApiController]
+    [Route("api/albums")]
+    [ResponseCache(CacheProfileName = "90SecondsCacheProfile")]
     public class AlbumsController : ControllerBase
     {
         private readonly IBandAlbumRepository _bandAlbumRepository;
