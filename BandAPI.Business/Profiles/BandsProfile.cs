@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Linq;
+using System.Dynamic;
 using BandAPI.Data.Entities;
 using AutoMapper;
 using BandAPI.Helpers;
@@ -15,6 +16,7 @@ namespace BandAPI.Profiles
                     dest => dest.FoundedYearsAgo,
                     opt => opt.MapFrom(src => $"{src.Founded.ToString("yyyy")} ({src.Founded.GetYearsAgo()}) years ago"));
             CreateMap<BandForCreatingDto, Band>();
+            CreateMap<IQueryable<Band>, IQueryable<BandDto>>();
         }
     }
 }

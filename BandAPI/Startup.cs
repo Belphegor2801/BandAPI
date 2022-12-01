@@ -35,7 +35,7 @@ namespace BandAPI
             services.AddControllers(setupAction =>
             {
                 setupAction.ReturnHttpNotAcceptable = true;
-                setupAction.CacheProfiles.Add("90SecondsCacheProfle", new CacheProfile { Duration = 90 });
+                setupAction.CacheProfiles.Add("90SecondsCacheProfile", new CacheProfile { Duration = 90 });
                 
             }).AddNewtonsoftJson(setupAction =>
             {
@@ -50,8 +50,6 @@ namespace BandAPI
             });
 
             services.AddScoped<IBandAlbumRepository, BandAlbumRepository>();
-            services.AddScoped<IPropertyMappingService, PropertyMappingService>();
-            services.AddScoped<IPropertyValidationService, PropertyValidationService>();
             services.AddDbContext<BandAlbumDBContext>(options =>
             {
                 options.UseSqlServer(Configuration.GetConnectionString("BandAlbumDBContext"));

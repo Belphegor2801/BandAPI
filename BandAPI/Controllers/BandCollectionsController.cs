@@ -20,43 +20,26 @@ namespace BandAPI.Controllers
     public class BandCollectionsController : ControllerBase
     {
         private readonly IBandAlbumRepository _bandAlbumRepository;
-        private readonly IMapper _mapper;
 
-        public BandCollectionsController(IBandAlbumRepository BandAlbumRepository, IMapper mapper)
+        public BandCollectionsController(IBandAlbumRepository BandAlbumRepository)
         {
             _bandAlbumRepository = BandAlbumRepository ?? throw new ArgumentNullException(nameof(BandAlbumRepository));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         [HttpGet("({ids})", Name = "GetBandCollection")]
-        public IActionResult GetBandCollection([FromRoute][ModelBinder(BinderType = typeof(ArrayModelBinder))] IEnumerable<Guid> ids)
+        public async Task<IActionResult> GetBandCollection([FromRoute][ModelBinder(BinderType = typeof(ArrayModelBinder))] IEnumerable<Guid> ids)
         {
-            if (ids == null) return BadRequest();
+            var result = await _bandAlbumRepository.GetBands(ids);
 
-            var bandEntities = _bandAlbumRepository.GetBands(ids);
-
-            if (ids.Count() != bandEntities.Count()) return NotFound();
-
-            var bandToReturn = _mapper.Map<IEnumerable<BandDto>>(bandEntities);
-
-            return Ok(bandToReturn);
+            return new ObjectResult(result) { StatusCode = (int)result.Code };
         }
 
         [HttpPost]
-        public ActionResult<IEnumerable<BandDto>> CreateBandCollection([FromBody] IEnumerable<BandForCreatingDto> bandCollection)
+        public async Task<ActionResult> CreateBandCollection([FromBody] IEnumerable<BandForCreatingDto> bandCollection)
         {
-            var bandEntities = _mapper.Map<IEnumerable<Band>>(bandCollection);
+            var result = await _bandAlbumRepository.AddBands(bandCollection);
 
-            foreach(var band in bandEntities)
-            {
-                _bandAlbumRepository.AddBand(band);
-            }
-            _bandAlbumRepository.Save();
-
-            var bandCollectionToReturn = _mapper.Map<IEnumerable<BandDto>>(bandEntities);
-            var IdsString = string.Join(",", bandCollectionToReturn.Select(b => b.Id));
-
-            return CreatedAtRoute("GetBandCollection", new { ids = IdsString }, bandCollectionToReturn);
+            return new ObjectResult(result) { StatusCode = (int)result.Code };
         }
     }
 }

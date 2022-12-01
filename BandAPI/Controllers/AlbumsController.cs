@@ -21,124 +21,57 @@ namespace BandAPI.Controllers
     public class AlbumsController : ControllerBase
     {
         private readonly IBandAlbumRepository _bandAlbumRepository;
-        private readonly IMapper _mapper;
 
-        public AlbumsController(IBandAlbumRepository BandAlbumRepository, IMapper mapper)
+        public AlbumsController(IBandAlbumRepository BandAlbumRepository)
         {
             _bandAlbumRepository = BandAlbumRepository ?? throw new ArgumentNullException(nameof(BandAlbumRepository));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         // GET: api/Bands
         [HttpGet]
-        public ActionResult<IEnumerable<AlbumDto>> GetAlbumsForBand(Guid bandId)
+        public async Task<IActionResult> GetAlbumsForBand(Guid bandId)
         {
-            if (!_bandAlbumRepository.BandExists(bandId))
-                return NotFound();
+            var result = await _bandAlbumRepository.GetAlbums(bandId);
 
-            var albumsFromRepo = _bandAlbumRepository.GetAlbums(bandId);
-            return Ok(_mapper.Map<IEnumerable<AlbumDto>>(albumsFromRepo));
+            return new ObjectResult(result) { StatusCode = (int)result.Code };
         }
 
         [HttpGet("{albumId}", Name = "GetAlbumForBand")]
         [ResponseCache(Duration = 120)]
-        public ActionResult<AlbumDto> GetAlbumForBand(Guid bandId, Guid albumId)
+        public async Task<IActionResult> GetAlbumForBand(Guid bandId, Guid albumId)
         {
-            if (!_bandAlbumRepository.BandExists(bandId))
-                return NotFound();
+            var result = await _bandAlbumRepository.GetAlbum(bandId, albumId);
 
-            var albumFromRepo = _bandAlbumRepository.GetAlbum(bandId, albumId);
-            if (albumFromRepo == null)
-                return NotFound();
-
-            return Ok(_mapper.Map<AlbumDto>(albumFromRepo));
+            return new ObjectResult(result) { StatusCode = (int)result.Code };
         }
 
         [HttpPost]
-        public ActionResult<AlbumDto> CreateAlbumForBand(Guid bandId, [FromBody] AlbumForCreatingDto album)
+        public async Task<IActionResult> CreateAlbumForBand(Guid bandId, [FromBody] AlbumForCreatingDto album)
         {
-            if (!_bandAlbumRepository.BandExists(bandId)) return NotFound();
-            var albumEntity = _mapper.Map<Album>(album);
-            _bandAlbumRepository.AddAlbum(bandId, albumEntity);
-            _bandAlbumRepository.Save();
-
-            var albumToReturn = _mapper.Map<AlbumDto>(albumEntity);
-            return CreatedAtRoute("GetAlbumForBand", new { bandId = bandId, albumId = albumToReturn.Id }, albumToReturn);
+            var result = await _bandAlbumRepository.AddAlbum(bandId, album);
+            return new ObjectResult(result) { StatusCode = (int)result.Code };
         }
 
         [HttpPut("{albumId}")]
-        public ActionResult UpdateAlbumForBand(Guid bandId, Guid albumId, [FromBody] AlbumForUpdatingDto album)
+        public async Task<IActionResult> UpdateAlbumForBand(Guid bandId, Guid albumId, [FromBody] AlbumForUpdatingDto album)
         {
-            if (!_bandAlbumRepository.BandExists(bandId)) return NotFound();
-
-            var albumFromRepo = _bandAlbumRepository.GetAlbum(bandId, albumId);
-            if (albumFromRepo == null) // Add album if not exist
-            {
-                var albumToAdd = _mapper.Map<Album>(album);
-                albumToAdd.Id = albumId;
-                _bandAlbumRepository.AddAlbum(bandId, albumToAdd);
-                _bandAlbumRepository.Save();
-
-                var albumToReturn = _mapper.Map<AlbumDto>(albumToAdd);
-
-                return CreatedAtRoute("GetAlbumForBand", new { bandId = bandId, albumId = albumToReturn.Id }, albumToReturn);
-            }
-
-            _mapper.Map(album, albumFromRepo);
-            _bandAlbumRepository.UpdateAlbum(albumFromRepo);
-            _bandAlbumRepository.Save();
-
-            return NoContent();
+            var result = await _bandAlbumRepository.UpdateAlbum(bandId, albumId, album);
+            return new ObjectResult(result) { StatusCode = (int)result.Code };
         }
 
         [HttpPatch("{albumId}")]
-        public ActionResult PartiallyUpdateAlbumForBand(Guid bandId, Guid albumId,
+        public async Task<IActionResult> PartiallyUpdateAlbumForBand(Guid bandId, Guid albumId,
            [FromBody] JsonPatchDocument<AlbumForUpdatingDto> patchDocument)
         {
-            if (!_bandAlbumRepository.BandExists(bandId))
-                return NotFound();
-
-            var albumFromRepo = _bandAlbumRepository.GetAlbum(bandId, albumId);
-            if (albumFromRepo == null)
-            {
-                var albumDto = new AlbumForUpdatingDto();
-                patchDocument.ApplyTo(albumDto);
-                var albumToAdd = _mapper.Map<Album>(albumDto);
-                albumToAdd.Id = albumId;
-
-                _bandAlbumRepository.AddAlbum(bandId, albumToAdd);
-                _bandAlbumRepository.Save();
-
-                var albumToReturn = _mapper.Map<AlbumDto>(albumToAdd);
-
-                return CreatedAtRoute("GetAlbumForBand", new { bandId = bandId, albumId = albumToReturn.Id }, albumToReturn);
-            }
-
-            var albumToPatch = _mapper.Map<AlbumForUpdatingDto>(albumFromRepo);
-            patchDocument.ApplyTo(albumToPatch, ModelState);
-
-            if (!TryValidateModel(albumToPatch))
-                return ValidationProblem(ModelState);
-
-            _mapper.Map(albumToPatch, albumFromRepo);
-            _bandAlbumRepository.UpdateAlbum(albumFromRepo);
-            _bandAlbumRepository.Save();
-
-            return NoContent();
+            var result = await _bandAlbumRepository.PartiallyUpdateAlbumForBand(bandId, albumId, patchDocument);
+            return new ObjectResult(result) { StatusCode = (int)result.Code };
         }
 
         [HttpDelete("{albumId}")]
-        public ActionResult DeleteAlbumForBand(Guid bandId, Guid albumId)
+        public async Task<IActionResult> DeleteAlbumForBand(Guid bandId, Guid albumId)
         {
-            if (!_bandAlbumRepository.BandExists(bandId)) return NotFound();
-
-            var albumFromRepo = _bandAlbumRepository.GetAlbum(bandId, albumId);
-            if (albumFromRepo == null) return NotFound();
-
-            _bandAlbumRepository.DeleteAlbum(albumFromRepo);
-            _bandAlbumRepository.Save();
-
-            return NoContent();
+            var result = await _bandAlbumRepository.DeleteAlbum(bandId, albumId);
+            return new ObjectResult(result) { StatusCode = (int)result.Code };
         }
     }
 }
