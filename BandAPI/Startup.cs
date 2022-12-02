@@ -54,6 +54,9 @@ namespace BandAPI
             {
                 options.UseSqlServer(Configuration.GetConnectionString("BandAlbumDBContext"));
             });
+
+            services.AddTransient<IUnitOfWork, UnitOfWork>();
+            services.AddTransient<IDatabaseFactory, DatabaseFactory>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BandAPI.Common;
 
 namespace BandAPI.Data
 {
@@ -14,8 +15,22 @@ namespace BandAPI.Data
         {
         }
 
+        private string connectionString;
+        public BandAlbumDBContext()
+        {
+            connectionString = Utils.GetConfig("ConnectionStrings:BandAlbumDBContext");
+        }
+
         public DbSet<Band> Bands { get; set; }
         public DbSet<Album> Albums { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlServer(connectionString);
+            }
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

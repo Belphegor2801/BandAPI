@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Dynamic;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Text.Json;
+using LinqKit;
 
 namespace BandAPI.Services
 {
@@ -22,6 +24,7 @@ namespace BandAPI.Services
     {
         private readonly BandAlbumDBContext _dbcontext;
         private readonly IMapper _mapper;
+        private readonly DbHandler<Band, BandDto, PaginationRequest> _dbHandler = DbHandler<Band, BandDto, PaginationRequest>.Instance; 
 
         public BandAlbumRepository(BandAlbumDBContext DBContext, IMapper mapper)
         {
@@ -174,47 +177,16 @@ namespace BandAPI.Services
             if (bandsResourceParameters == null)
                 return new ResponseError(System.Net.HttpStatusCode.NotFound, "Bands's resouces parameters not found!");
 
-            var collection = _dbcontext.Bands as IQueryable<Band>;
-
-            if (!string.IsNullOrWhiteSpace(bandsResourceParameters.OrderBy))
-            {
-                collection = collection.ApplySorting(bandsResourceParameters.OrderBy);
-            }
-
-            if (!string.IsNullOrWhiteSpace(bandsResourceParameters.MainGenre))
-            {
-                var mainGenre = bandsResourceParameters.MainGenre.Trim();
-                collection = collection.Where(b => b.MainGenre == mainGenre);
-            }
-
-            if (!string.IsNullOrWhiteSpace(bandsResourceParameters.SearchQuery))
-            {
-                var searchQuery = bandsResourceParameters.SearchQuery.Trim();
-                collection = collection.Where(b => b.Name.Contains(searchQuery));
-            }
+            var predicate = BuildQuery(bandsResourceParameters);
             var paginationRequest = new PaginationRequest()
             {
-                Fields = bandsResourceParameters.Fields,
                 Page = bandsResourceParameters.PageNumber,
                 Size = bandsResourceParameters.PageSize,
                 Sort = bandsResourceParameters.OrderBy
             };
 
-            var bandsFromRepo = collection.GetPage<Band>(paginationRequest);
-            var bandsToReturn = _mapper.Map<IEnumerable<BandDto>>(bandsFromRepo.Content).ShapeData(bandsResourceParameters.Fields);
-
-            var bandsPagnigation = new Pagination<ExpandoObject>()
-            {
-                Content = bandsToReturn.ToList(),
-                Page = bandsFromRepo.Page,
-                Size = bandsFromRepo.Size,
-                TotalPages = bandsFromRepo.TotalPages,
-                TotalElements = bandsFromRepo.TotalElements,
-                NumberOfElements = bandsFromRepo.NumberOfElements
-            };
-            
-
-            return new ResponsePagination<ExpandoObject>(bandsPagnigation);
+            var result = await _dbHandler.GetPageAsync(predicate, paginationRequest, _mapper);
+            return result;          
         }
 
         async Task<Response> IBandAlbumRepository.AddBand(BandForCreatingDto band)
@@ -282,6 +254,15 @@ namespace BandAPI.Services
         }
 
 
+        private Expression<Func<Band, bool>> BuildQuery(BandsResourceParameters query)
+        {
+            var predicate = PredicateBuilder.New<Band>(true);
 
+            if (!string.IsNullOrEmpty(query.SearchQuery))
+                predicate.And(s => s.Name.Contains(query.SearchQuery)
+                || s.MainGenre.Contains(query.SearchQuery.ToLower()));
+
+            return predicate;
+        }
     }
 }

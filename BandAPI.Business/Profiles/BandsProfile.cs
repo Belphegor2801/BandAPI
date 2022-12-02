@@ -4,6 +4,7 @@ using BandAPI.Data.Entities;
 using AutoMapper;
 using BandAPI.Helpers;
 using BandAPI.Models;
+using BandAPI.Common;
 
 namespace BandAPI.Profiles
 {
@@ -16,7 +17,8 @@ namespace BandAPI.Profiles
                     dest => dest.FoundedYearsAgo,
                     opt => opt.MapFrom(src => $"{src.Founded.ToString("yyyy")} ({src.Founded.GetYearsAgo()}) years ago"));
             CreateMap<BandForCreatingDto, Band>();
-            CreateMap<IQueryable<Band>, IQueryable<BandDto>>();
+            CreateMap<Band, ExpandoObject>();
+            CreateMap<Pagination<Band>, Pagination<BandDto>>();
         }
     }
 }
