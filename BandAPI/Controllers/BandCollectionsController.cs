@@ -10,7 +10,7 @@ using BandAPI.Data;
 using BandAPI.Data.Entities;
 using BandAPI.Services;
 using BandAPI.Models;
-using BandAPI.Helpers;
+using BandAPI.Common;
 using AutoMapper;
 
 namespace BandAPI.Controllers
@@ -31,7 +31,7 @@ namespace BandAPI.Controllers
         {
             var result = await _bandAlbumRepository.GetBands(ids);
 
-            return new ObjectResult(result) { StatusCode = (int)result.Code };
+            return Helper.TransformData(result);
         }
 
         [HttpPost]
@@ -39,7 +39,7 @@ namespace BandAPI.Controllers
         {
             var result = await _bandAlbumRepository.AddBands(bandCollection);
 
-            return new ObjectResult(result) { StatusCode = (int)result.Code };
+            return Helper.TransformData(result);
         }
     }
 }

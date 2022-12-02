@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Dynamic;
 using System.Reflection;
 
-namespace BandAPI.Helpers
+namespace BandAPI.Common
 {
     public static class IEnumerableExtension
     {

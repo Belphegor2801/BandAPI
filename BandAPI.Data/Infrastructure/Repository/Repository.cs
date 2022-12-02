@@ -1,5 +1,4 @@
 using BandAPI.Common;
-using BandAPI.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using System;

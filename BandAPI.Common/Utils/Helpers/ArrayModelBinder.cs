@@ -7,7 +7,7 @@ using System.Reflection;
 using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace BandAPI.Helpers
+namespace BandAPI.Common
 {
     public class ArrayModelBinder: IModelBinder
     {

@@ -10,7 +10,7 @@ using BandAPI.Data;
 using BandAPI.Data.Entities;
 using BandAPI.Services;
 using BandAPI.Models;
-using BandAPI.Helpers;
+using BandAPI.Common;
 using AutoMapper;
 
 namespace BandAPI.Controllers
@@ -49,14 +49,14 @@ namespace BandAPI.Controllers
         public async Task<IActionResult> CreateAlbumForBand(Guid bandId, [FromBody] AlbumForCreatingDto album)
         {
             var result = await _bandAlbumRepository.AddAlbum(bandId, album);
-            return new ObjectResult(result) { StatusCode = (int)result.Code };
+            return Helper.TransformData(result);
         }
 
         [HttpPut("{albumId}")]
         public async Task<IActionResult> UpdateAlbumForBand(Guid bandId, Guid albumId, [FromBody] AlbumForUpdatingDto album)
         {
             var result = await _bandAlbumRepository.UpdateAlbum(bandId, albumId, album);
-            return new ObjectResult(result) { StatusCode = (int)result.Code };
+            return Helper.TransformData(result);
         }
 
         [HttpPatch("{albumId}")]
@@ -64,14 +64,14 @@ namespace BandAPI.Controllers
            [FromBody] JsonPatchDocument<AlbumForUpdatingDto> patchDocument)
         {
             var result = await _bandAlbumRepository.PartiallyUpdateAlbumForBand(bandId, albumId, patchDocument);
-            return new ObjectResult(result) { StatusCode = (int)result.Code };
+            return Helper.TransformData(result);
         }
 
         [HttpDelete("{albumId}")]
         public async Task<IActionResult> DeleteAlbumForBand(Guid bandId, Guid albumId)
         {
             var result = await _bandAlbumRepository.DeleteAlbum(bandId, albumId);
-            return new ObjectResult(result) { StatusCode = (int)result.Code };
+            return Helper.TransformData(result);
         }
     }
 }

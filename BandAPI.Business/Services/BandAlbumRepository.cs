@@ -7,7 +7,6 @@ using System.Dynamic;
 using System.Threading.Tasks;
 using BandAPI.Data;
 using BandAPI.Data.Entities;
-using BandAPI.Helpers;
 using BandAPI.Models;
 using BandAPI.Common;
 using AutoMapper;

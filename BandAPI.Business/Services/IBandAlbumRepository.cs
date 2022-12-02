@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using BandAPI.Data.Entities;
-using BandAPI.Helpers;
 using BandAPI.Common;
 using BandAPI.Models;
 using System.Threading.Tasks;

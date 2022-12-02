@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Dynamic;
-using System.Linq;
 using System.Reflection;
 
-namespace BandAPI.Helpers
+namespace BandAPI.Common
 {
     public static class ObjectExtension
     {

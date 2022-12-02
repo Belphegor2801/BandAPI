@@ -1,8 +1,8 @@
 ﻿using System;
 using BandAPI.Data.Entities;
 using BandAPI.Models;
+using BandAPI.Common;
 using AutoMapper;
-using BandAPI.Helpers;
 
 namespace BandAPI.Business.Profiles
 {

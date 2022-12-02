@@ -2,7 +2,6 @@
 using System.Dynamic;
 using BandAPI.Data.Entities;
 using AutoMapper;
-using BandAPI.Helpers;
 using BandAPI.Models;
 using BandAPI.Common;
 

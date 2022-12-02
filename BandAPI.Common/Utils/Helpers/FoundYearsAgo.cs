@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BandAPI.Helpers
+namespace BandAPI.Common
 {
     public static class FoundYearsAgo
     {

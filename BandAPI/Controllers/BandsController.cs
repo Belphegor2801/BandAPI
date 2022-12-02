@@ -10,7 +10,7 @@ using BandAPI.Data;
 using BandAPI.Data.Entities;
 using BandAPI.Services;
 using BandAPI.Models;
-using BandAPI.Helpers;
+using BandAPI.Common;
 using AutoMapper;
 
 namespace BandAPI.Controllers
@@ -33,21 +33,21 @@ namespace BandAPI.Controllers
         {
             var result = await _bandAlbumRepository.GetBands(bandsResourceParameters);
 
-            return new ObjectResult(result) { StatusCode = (int)result.Code };
+            return Helper.TransformData(result);
         }
 
         [HttpGet("{bandId}", Name = "GetBand")]
         public async Task<IActionResult> GetBand(Guid bandId, string fields)
         {
             var result = await _bandAlbumRepository.GetBand(bandId, fields);
-            return new ObjectResult(result) { StatusCode = (int)result.Code };
+            return Helper.TransformData(result);
         }
 
         [HttpPost(Name = "AddBand")]
         public async Task<IActionResult> CreateBand([FromBody] BandForCreatingDto band)
         {
             var result = await _bandAlbumRepository.AddBand(band);
-            return new ObjectResult(result) { StatusCode = (int)result.Code };
+            return Helper.TransformData(result);
         }
 
         [HttpOptions]
@@ -61,7 +61,7 @@ namespace BandAPI.Controllers
         public async Task<ActionResult> DeleteBand(Guid bandId)
         {
             var result = await _bandAlbumRepository.DeleteBand(bandId);
-            return new ObjectResult(result) { StatusCode = (int)result.Code };
+            return Helper.TransformData(result);
         }
     }
 }
